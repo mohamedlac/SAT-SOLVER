@@ -1,51 +1,37 @@
 
+
 public class Literal {
 
-	private int index;
-	private boolean negation;
+	private int num;
 	private String name;
-	
-	
 	
 	public Literal()
 	{
-		
 	}
 	
-	public Literal(int index,boolean negation)
+	public Literal(int num)
 	{
-		this.index = index;
-		this.negation = negation;
-		SetName();
+		this.num = num;
+		this.name = "X"+num;
 	}
 	
-	public int getIndex() {
-		return index;
+	public int getNum() {
+		return num;
 	}
-	public void setIndex(int index) {
-		this.index = index;
-	}
-	public boolean isNegation() {
-		return negation;
-	}
-	public void setNegation(boolean negation) {
-		this.negation = negation;
+	public void setNum(int num) {
+		this.num = num;
 	}
 	public String getName() {
 		return name;
 	}
 	
-	public void SetName()
+	public String toString(boolean negation)
 	{
-		if(isNegation())	
-			name = "-X"+index;
-		else	
-			name = "X"+index;
+		if(negation)
+			return "-"+name;
+		else
+			return name;
 	}
-	
-	public String toString()
-	{
-		return name;
-	}
+
 	
 }

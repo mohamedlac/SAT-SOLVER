@@ -1,45 +1,54 @@
 
+
+
 public class Clause {
 
-	private int n_literals;
+	private int id;
+	private int num_literals;
 	private Literal[] literals;
+	private boolean[] negations;
 	private  int last=0;
 	
-	public Clause(int n_literals)
+	public Clause(int id,int num_literals)
 	{
-		this.setN_literals(n_literals);
-		setLiterals(new Literal[n_literals]);
-		
+		this.id=id;
+		this.num_literals = num_literals;
+		this.literals = new Literal[num_literals];
+		this.negations = new boolean[num_literals];
 	}
 	
 	public int getN_literals() {
-		return n_literals;
+		return num_literals;
 	}
 
-	public void setN_literals(int n_literals) {
-		this.n_literals = n_literals;
+	public void setN_literals(int num_literals) {
+		this.num_literals = num_literals;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
 	}
 
 	public Literal[] getLiterals() {
 		return literals;
 	}
 	
-	public void addLiteral(Literal l)
+	public void addLiteral(Literal l,boolean negation)
 	{
 		if(!is_full())	{
-		literals[last] = l;
-		
-		last++;
+			literals[last] = l;
+			negations[last] = negation;
+			last++;
 		}
 	}
 	
 	private boolean is_full()
 	{
-		return last == n_literals;
-	}
-
-	public void setLiterals(Literal[] literals) {
-		this.literals = literals;
+		return last == num_literals;
 	}
 	
 	public String toString()
@@ -47,7 +56,7 @@ public class Clause {
 		String str = "(";
 		
 		for(int i =0; i < literals.length;i++) {
-			str += literals[i].toString();
+			str += literals[i].toString(negations[i]);
 			if(i != literals.length -1) str+=" V ";
 		}
 		str+=")";

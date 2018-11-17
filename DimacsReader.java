@@ -69,17 +69,18 @@ public class DimacsReader {
 		InitBuffer();
 		System.out.println("****CNF INITIALIZATION****");
 		CNF cnf= InitCNF(bf.readLine());
+
 		String str_clause;
-		int i=0;
-		while(i < cnf.getNum_clauses())
+		int clause_id=0;
+		while(clause_id < cnf.getNum_clauses())
 		  {
 			str_clause = bf.readLine();
-			Clause c = SetClause(str_clause);
+			Clause c = SetClause(cnf,str_clause,clause_id);
 			cnf.addClause(c);
-			System.out.print("Clause #"+(i+1)+": ");
+			System.out.print("Clause #"+(clause_id+1)+": ");
 			System.out.println(c.toString());
 			System.out.println("");
-			i++;
+			clause_id++;
 		  }
 		
 		closeBuffer();
@@ -97,50 +98,46 @@ public class DimacsReader {
 		int numLiterals = Integer.valueOf(meta[2]);
 		System.out.println("Num_Clauses= "+size+ " Num_Literals = "+ numLiterals);
 		System.out.println("----------------------");
-		return new CNF(size,numLiterals);
+		return new CNF(numLiterals,size);
 	}
 	
 	//Take in parameter a line of the Dimacs file which represents a clause
 	//We just split the str_clause by the BLANK symbol and do some treatments 
 	//returns an object instance of Clause
 	
-	private  Clause SetClause(String str_clause)
+	private  Clause SetClause(CNF cnf,String str_clause,int clause_id)
 	{	
+		
 		String[] str_literals = str_clause.split(BLANK);
 		int numLiterals = str_literals.length -1;
-		Clause clause= new Clause(numLiterals);
+		Clause clause= new Clause(clause_id,numLiterals);
 	
 		for(int i=0; i<numLiterals;i++)
 		{
-			Literal l = new Literal();
+			Literal l = null;
+			boolean negation = false;
 			//We detect if the literal is preceded by the negation symbol
 			//i used the regex pattern [-\\d+] = any literal that is preceded by the symbol "-" 
 			//and followed by one or + digits [0..9]  
 			if(str_literals[i].matches("-\\d+"))
 			{
-				l.setNegation(true);
-				l.setIndex(Integer.valueOf(str_literals[i].substring(1)));
-				l.SetName();
+				negation = true;
+				l = new Literal(Integer.valueOf(str_literals[i].substring(1)));
 			}
-			
 			//[\\d+] = the literal is not preceded by a negation 
 			else if( str_literals[i].matches("\\d+"))
 			{
-				l.setNegation(false);
-				l.setIndex(Integer.valueOf(str_literals[i].substring(0)));
-				l.SetName();
-				
+				negation = false;
+				l = new Literal(Integer.valueOf(str_literals[i].substring(0)));
 			}
-				
-			clause.addLiteral(l);
+			clause.addLiteral(l, negation);
+			cnf.updateIndexation(l.getName(), clause_id);
 		}
 		
 		return clause;
 		
 	}
 	
-	
-
 	private String path;
 	private File file;
 	private BufferedReader bf;
