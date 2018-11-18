@@ -5,12 +5,22 @@ import java.io.FileReader;
 import java.io.IOException;
 
 
+/***
+ * 
+ * @author mohamed
+ *
+ */
 public class DimacsReader {
 
+	private static final String BLANK="\\s"; 
+	
+	private String path;
+	private File file;
+	private BufferedReader bf;
 	
 	//Constructor takes in parameter the full path of the Dimacs file
-	//Do not forget to specify a well formed path, i didn't handled the Regex of a correct path
-	//I'LL DO IT LATER :)!!!
+	//Do not forget to specify a well formed path
+	//ToDO : verify if a path is well formed (I'LL DO IT LATER) :)!!!
 	public DimacsReader(String path)
 	{
 		this.setPath(path);
@@ -60,9 +70,12 @@ public class DimacsReader {
 		setBf(new BufferedReader(new FileReader(file)));
 	}
 	
-	//Reads a Dimacs file and returns a CNF instance of it
-	//A CNF is a conjuction of disjonctions
-	//Refer to sat_solver.pdf  to understand the structure of a Dimacs file
+
+	/***
+	 * @see Please refer to sat_solver for further details about Dimacs files
+	 * @return CNF the cnf of the file of the path
+	 * @throws IOException
+	 */
 	public CNF SetCNF() throws IOException
 	{
 		InitFile();
@@ -88,9 +101,11 @@ public class DimacsReader {
 		return cnf;
 	}
 	
-	//Initialize the size (number of clauses) and the Number of literals of a cnf
-	//The necessary information are in the first line of the Dimacs file
-	//The first line of the file is passed as an argument
+	
+	/***
+	 * @param head the first line of the Dimacs file
+	 * @return CNF
+	 */
 	private  CNF InitCNF(String head)
 	{
 		String[]meta= head.split(BLANK);
@@ -101,11 +116,15 @@ public class DimacsReader {
 		return new CNF(numLiterals,size);
 	}
 	
-	//Take in parameter a line of the Dimacs file which represents a clause
-	//We just split the str_clause by the BLANK symbol and do some treatments 
-	//returns an object instance of Clause
 	
-	private  Clause SetClause(CNF cnf,String str_clause,int clause_id)
+	
+	/***
+	 * @param cnf the CNF to which the clause belong 
+	 * @param str_clause the clause in string format 
+	 * @param clause_id 
+	 * @return Clause
+	 */
+	private Clause SetClause(CNF cnf,String str_clause,int clause_id)
 	{	
 		
 		String[] str_literals = str_clause.split(BLANK);
@@ -122,15 +141,15 @@ public class DimacsReader {
 			if(str_literals[i].matches("-\\d+"))
 			{
 				negation = true;
-				l = new Literal(Integer.valueOf(str_literals[i].substring(1)));
+				l = new Literal(Integer.valueOf(str_literals[i].substring(1)),negation);
 			}
 			//[\\d+] = the literal is not preceded by a negation 
 			else if( str_literals[i].matches("\\d+"))
 			{
 				negation = false;
-				l = new Literal(Integer.valueOf(str_literals[i].substring(0)));
+				l = new Literal(Integer.valueOf(str_literals[i].substring(0)),negation);
 			}
-			clause.addLiteral(l, negation);
+			clause.addLiteral(l);
 			cnf.updateIndexation(l.getName(), clause_id);
 		}
 		
@@ -138,9 +157,5 @@ public class DimacsReader {
 		
 	}
 	
-	private String path;
-	private File file;
-	private BufferedReader bf;
 	
-	private static final String BLANK="\\s"; 
 }

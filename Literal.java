@@ -1,36 +1,34 @@
 
+/***
+ * 
+ * @author mohamed
+ *
+ */
+public class Literal extends Variable {
 
-public class Literal {
-
-	private int num;
-	private String name;
 	
-	public Literal()
+	private boolean negation;
+	
+	public Literal(int id,boolean negation)
 	{
+		super(id);
+		this.setNegation(negation);
 	}
 	
-	public Literal(int num)
-	{
-		this.num = num;
-		this.name = "X"+num;
-	}
-	
-	public int getNum() {
-		return num;
-	}
-	public void setNum(int num) {
-		this.num = num;
-	}
-	public String getName() {
-		return name;
-	}
-	
-	public String toString(boolean negation)
+	public String toString()
 	{
 		if(negation)
-			return "-"+name;
+			return "-"+super.getName();
 		else
-			return name;
+			return super.getName();
+	}
+
+	public boolean isNegation() {
+		return negation;
+	}
+
+	public void setNegation(boolean negation) {
+		this.negation = negation;
 	}
 
 	
