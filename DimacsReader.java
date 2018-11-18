@@ -29,7 +29,7 @@ public class DimacsReader {
 	
 	/***
 	 * @see Please refer to sat_solver for further details about Dimacs files
-	 * @return CNF the cnf of the file of the path
+	 * @return CNF the cnf of the file 
 	 * @throws IOException
 	 */
 	public CNF SetCNF() throws IOException
@@ -44,7 +44,7 @@ public class DimacsReader {
 		while(clause_id < cnf.getNum_clauses())
 		  {
 			str_clause = bf.readLine();
-			Clause c = SetClause(cnf,str_clause,clause_id);
+			Clause c = SetClause(cnf,str_clause,(clause_id+1));
 			cnf.addClause(c);
 			System.out.print("Clause #"+(clause_id+1)+": ");
 			System.out.println(c.toString());

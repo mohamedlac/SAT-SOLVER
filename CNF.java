@@ -15,7 +15,7 @@ public class CNF {
 	 * @example (X2 v X1) ^ (X3 v X1) ^ (X3 v -X2)
 	 * Indexation of X2 we'll be : {0,2}
 	 * Indexation of X3 we'll be : {1,2}
-	 * IMPORTANT : KEY OF THE MAP IS THE NAME OF THE VARIABLE !!!!!   
+	 * @important : KEY OF THE MAP IS THE NAME OF THE VARIABLE !!!!!   
 	 */
 
 	private Map<String,ArrayList<Integer>> indexation;
@@ -31,7 +31,7 @@ public class CNF {
 		this.num_clauses = num_clauses;
 		this.num_literals = num_literals;
 		this.satisfiable = false;
-		this.clauses = new ArrayList<Clause>(num_clauses);
+		this.clauses = new ArrayList<Clause>();
 		indexation = new HashMap<String, ArrayList<Integer>>(num_literals);
 		InitIndexation();
 		}
@@ -88,7 +88,11 @@ public class CNF {
 	 */
 	public Clause getClauseById(int id)
 	{
-		return clauses.get(id);
+		for (int i = 0; i < clauses.size(); i++) {
+			if(clauses.get(i).getId() == id)
+				return clauses.get(i);
+			}
+		return null;
 	}
 	
 	/***
@@ -98,7 +102,14 @@ public class CNF {
 	public void removeClause(int id)
 	{
 		if(!isEmpty()) {
-			clauses.remove(id);
+			for (int i = 0; i < clauses.size(); i++) {
+				if(clauses.get(i).getId() == id)
+				{
+					clauses.remove(i);
+					break;}
+					
+			}
+			
 			num_clauses--;
 		}
 	}
@@ -117,7 +128,7 @@ public class CNF {
 	 * @param key refers to the name of the variable
 	 * @param id_clause
 	 * @note id_clause begin from index 0
-	 * @example : updateIndexation("X2",2) 
+	 * @example : updateIndexation("X2",1) 
 	 */
 	public void updateIndexation(String key, int id_clause)
 	{
@@ -131,7 +142,7 @@ public class CNF {
 	 * @param key
 	 * @return ArrayList<Integer> 
 	 * @note: containing id's of clauses where the variable appears
-	 * @example: getIndexationOf("X3)
+	 * @example: getIndexationOf("X3")
 	 */
 	public ArrayList<Integer> getIndexationOf(String key) {
 		return indexation.get(key);

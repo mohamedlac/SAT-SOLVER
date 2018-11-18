@@ -16,8 +16,6 @@ public class Variable {
 		name = "X"+id;
 	}
 	
-	
-	
 	public int getId() {
 		return id;
 	}

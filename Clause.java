@@ -123,7 +123,12 @@ public class Clause {
 	 */
 	public boolean isNegation(int id_v)
 	{
-		return literals.get(id_v).isNegation();
+		
+		for (int i = 0; i < literals.size(); i++) {
+			if(literals.get(i).getId() == id_v)
+				return literals.get(i).isNegation();
+		}
+		return false;
 	}
 	
 	/**
