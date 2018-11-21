@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Map;
 
 /***
  * 
@@ -7,75 +8,85 @@ import java.util.ArrayList;
  */
 public abstract class Solver {
 	
-	/***
-	 * @see Please refer to sat_solver.pdf for PseudoCode 
-	 * @param cnf the cnf that we want to simplify
-	 * @param v the variable tha we choosed 
-	 * @return a simplified CNF 
-	 * @author mohamed
-	 */
-	public static  CNF simplify(CNF cnf,Variable v)
+	//I'm not using this in my dpll
+	//maybe this functions needs some modifications in order to work
+	//I don't know
+	public static void pure_literal_elimination(CNF cnf,Map.Entry<String, Boolean> entry)
 	{
-		CNF cnf_prime = cnf;
-		ArrayList<Integer> clauses_id = cnf_prime.getIndexationOf(v.getName());
-		System.out.println("num_clauses = "+cnf_prime.getNum_clauses());
-		for(int i =0; i < clauses_id.size(); i++)
+		int d = entry.getValue()?1:0;
+		ArrayList<Integer> clause_id = cnf.getIndexationOf(entry.getKey());
+		for(int i=0;i<clause_id.size();i++)
 		{
-			System.out.println("Clause : "+clauses_id.get(i));
-			//If the literal is preceded by a negation and  v.getValue == 1
-			// we remove the literal from the clause
-			//System.out.println("the clause is not null");
-			if(cnf_prime.getClauseById(clauses_id.get(i)).isNegation(v.getId())
-						&& (v.getValue() ==1))
-				{
-					cnf_prime.getClauseById(clauses_id.get(i)).removeLiteralById(v.getId());
-					System.out.println("literal removed (preceded by negation and value = 1)");
-				}
-			
-			
-			
-				
-			
-			//If the literal is not preceded by a negation and  v.getValue == 1
-			// we remove the clause
-			else if(!cnf_prime.getClauseById(clauses_id.get(i)).isNegation(v.getId())
-					&& (v.getValue() ==1))
-			{
-				cnf_prime.removeClause(clauses_id.get(i));
-				System.out.println("clause removed (no negation and value = 1)");
-			}
-			//If the literal is preceded by a negation and  v.getValue == 0
-			// we remove the clause
-			else if(cnf_prime.getClauseById(clauses_id.get(i)).isNegation(v.getId())
-					&& (v.getValue() ==0))
-			{
-				cnf_prime.removeClause(clauses_id.get(i));
-				System.out.println("clause removed (preceded by a negation and value = 0)");
-			}
-			
-			//If the literal is not preceded by a negation and  v.getValue == 0
-			// we remove the literal from the clause
-			else if(!cnf_prime.getClauseById(clauses_id.get(i)).isNegation(v.getId())
-					&& (v.getValue() ==0))
-			{
-				cnf_prime.getClauseById(clauses_id.get(i)).removeLiteralById(v.getId());
-				System.out.println("literal removed (no negation and value= 0)");
-			}
-				
+			if(cnf.getClauseById(clause_id.get(i)) !=null)
+				cnf.removeClause(clause_id.get(i));
 		}
-		
-		return cnf_prime;
+		cnf.getNeg_appearance().remove(entry.getKey());
+		cnf.getPos_appearance().remove(entry.getKey());
 	}
 	
-	/***
-	 * TODO
-	 * @see Please refer to sat_solver.pdf for PseudoCode 
-	 * @param cnf
-	 * @return An Array containing the values of each variable in order to Satisfy the cnf
-	 */
-	public int[] backtracking(CNF cnf)
+	
+	private static void unitPropagation(CNF cnf,String l,int value)
 	{
-		return null;
+		ArrayList<Integer> l_clauses = cnf.getIndexationOf(l);
+		for(int clause_index : l_clauses)
+		{
+			Clause c = null;
+			if(!((c =cnf.getClauseById(clause_index))==null))
+			{
+				if(c.isNegation(l) && value==1)
+					cnf.getClauseById(clause_index).removeLiteral(l, c.isNegation(l));
+				
+				else if(!c.isNegation(l) && value==1)
+					cnf.removeClause(clause_index);
+				
+				else if(c.isNegation(l) && value == 0)
+					cnf.removeClause(clause_index);
+				
+				else if(!c.isNegation(l) && value ==0)
+					cnf.getClauseById(clause_index).removeLiteral(l, c.isNegation(l));
+				
+				cnf.DecrementNegAppearance(l);
+				cnf.DecrementPosAppearance(l);
+			}
+		}
 	}
+	
+	public static int makeDecision(boolean negation)
+	{
+		if(negation)
+			return 0;
+		return 1;
+	}
+	
+	public static  boolean DPLL2(CNF cnf)
+	{
+		
+		//Consistency
+		if(cnf.isConsistent())
+			return true;
+		//Empty CLause
+		else if(cnf.emptyClause())
+			return false;
+		//Unit clause
+		 for(Clause c : cnf.getClauses())
+		 	{
+				if(c != null && c.isUnit())
+				{
+					int value = makeDecision(c.getLastLiteral().getValue());
+					System.out.println("choosed "+c.getLastLiteral().getKey()+" value : "+value);
+					unitPropagation(cnf, c.getLastLiteral().getKey(), value);
+				}
+			}
+			//We choose a variable to satisfy using DLIS Heuristic
+			Map.Entry<String,Integer> decision = Heuristic.DLIS(cnf);
+			System.out.println("heuristic choosed "+decision.getKey()+" value : "+decision.getValue());
+			unitPropagation(cnf,decision.getKey(),decision.getValue());
+			
+		return DPLL2(cnf);
+	}
+	
+	
+
+	
 
 }

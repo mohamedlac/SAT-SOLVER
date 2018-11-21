@@ -1,4 +1,6 @@
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
 
 /***
@@ -10,8 +12,7 @@ public class Clause {
 
 	private int id;
 	private int num_literals;
-	private ArrayList<Literal> literals;
-	private  int last=0;
+	private HashMap<String, Boolean> literals;
 	
 	/***
 	 * 
@@ -22,8 +23,7 @@ public class Clause {
 	{
 		this.id=id;
 		this.num_literals = num_literals;
-		this.literals = new ArrayList<Literal>(num_literals);
-		
+		this.literals = new HashMap<String,Boolean>();
 	}
 
 	/***
@@ -58,7 +58,7 @@ public class Clause {
 	 * 
 	 * @return An ArrayList containing all the literals of the clause
 	 */
-	public ArrayList<Literal> getLiterals() {
+	public HashMap<String,Boolean> getLiterals() {
 		return literals;
 	}
 	
@@ -66,78 +66,44 @@ public class Clause {
 	 * 
 	 * @param l the literal that we want to add to the clause
 	 */
-	public void addLiteral(Literal l)
+	public void addLiteral(String key, boolean negation)
 	{
-		if(!is_full())	{
-			literals.add(l);
-			last++;
-		}
+		literals.put(key,negation);
 	}
 	
 	/***
 	 * 
 	 * @param l the literal we want to remove from the clause
 	 */
-	public void removeLiteral(Literal l)
+	public void removeLiteral(String key, boolean value)
 	{
-		if(!isEmpty())
-		{
-			literals.remove(l);
-			num_literals--;
-		}
-			
+			//System.out.println(key+" removed from clause "+ id);
+			literals.remove(key,value);
 	}
 	
-	/***
-	 * 
-	 * @param id of te literal we want to remove
-	 */
-	public void removeLiteralById(int id)
-	{
-		for (int i = 0; i < literals.size(); i++) {
-			if(literals.get(i).getId() == id)
-			{
-				literals.remove(i);
-				break;
-			}
-		}
-	}
 	
-	/***
-	 * 
-	 * @param id_v it's the id of the variable we are looking for
-	 * @return position of the variable in the clause, -1 otherwise
-	 */
-	public int contains(int id_v)
+	public Entry<String, Boolean> getLastLiteral()
 	{
-		for (int i = 0; i < literals.size(); i++)
-			if(literals.get(i).getId() == id_v)
-				return i;
-		return -1;
+		if(isUnit())
+			return literals.entrySet().iterator().next();
+		return null;
 	}
-	
 	/***
 	 * 
 	 * @param id_v the id of the variable we want to check
 	 * @return True if there's a negation ,False otherwise
 	 */
-	public boolean isNegation(int id_v)
+	public boolean isNegation(String key)
 	{
-		
-		for (int i = 0; i < literals.size(); i++) {
-			if(literals.get(i).getId() == id_v)
-				return literals.get(i).isNegation();
-		}
+		if(literals.containsKey(key))
+			return literals.get(key);
 		return false;
 	}
 	
-	/**
-	 * 
-	 * @return 
-	 */
-	private boolean is_full()
+	public boolean isUnit()
 	{
-		return last == num_literals;
+		//System.out.println("is_unit called for clause "+id);
+		return this.literals.size() ==1;
 	}
 	
 	/***
@@ -147,21 +113,28 @@ public class Clause {
 	
 	public boolean isEmpty()
 	{
-		 return literals.isEmpty();
+		return literals.isEmpty();
 	}
 	
 	
 	public String toString()
 	{
 		String str = "(";
-		
-		for(int i =0; i < literals.size();i++) {
-			str += literals.get(i).toString();
-			if(i != literals.size() -1) str+=" V ";
+		Iterator i = literals.entrySet().iterator();
+		while(i.hasNext())
+		{
+			Entry<String,Boolean> l = (Entry<String, Boolean>)i.next();
+			if(l.getValue())
+				str+="-"+l.getKey();
+			else
+				str+=l.getKey();
+			str+=" or ";
 		}
+	
 		str+=")";
 		
 		return str;
 	}
+
 	
 }

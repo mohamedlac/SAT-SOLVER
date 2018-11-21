@@ -9,12 +9,16 @@ public class Main {
 		//Do not forget to replace it with your's
 		//IT WON'T WORK OTHERWISE !!!
 		DimacsReader dimacs = 
-				new DimacsReader("/home/mohamed/Master1/S1/complexite_algo/instances_test/instances_50_150/inst_50_150_02.cnf");
+				new DimacsReader("/home/mohamed/Master1/S1/"
+						+ "complexite_algo/instances_test/instances_20_100/inst_20_100_09.cnf");
 		
 		//Creates an instance of a CNF from the Dimacs file specified before
 		CNF cnf = dimacs.SetCNF();
-		System.out.println(cnf.toString());
-
+		
+		if(Solver.DPLL2(cnf))
+			System.out.println("Satisfiable");
+		else
+			System.out.println("Not Satisfiable");
 		}
 		
 	

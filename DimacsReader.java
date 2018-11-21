@@ -51,7 +51,7 @@ public class DimacsReader {
 			System.out.println("");
 			clause_id++;
 		  }
-		
+		cnf.findPureLiterals();
 		closeBuffer();
 		
 		return cnf;
@@ -86,24 +86,29 @@ public class DimacsReader {
 	
 		for(int i=0; i<numLiterals;i++)
 		{
-			Literal l = null;
+			String name = null;
 			boolean negation = false;
 			//We detect if the literal is preceded by the negation symbol
 			//i used the regex pattern [-\\d+] = any literal that is preceded by the symbol "-" 
 			//and followed by one or + digits [0..9]  
 			if(str_literals[i].matches("-\\d+"))
 			{
+				name = "X"+str_literals[i].substring(1);
 				negation = true;
-				l = new Literal(Integer.valueOf(str_literals[i].substring(1)),negation);
+
 			}
 			//[\\d+] = the literal is not preceded by a negation 
-			else if( str_literals[i].matches("\\d+"))
+			else if(str_literals[i].matches("\\d+"))
 			{
+				name = "X"+str_literals[i].substring(0);
 				negation = false;
-				l = new Literal(Integer.valueOf(str_literals[i].substring(0)),negation);
+
 			}
-			clause.addLiteral(l);
-			cnf.updateIndexation(l.getName(), clause_id);
+			
+			clause.addLiteral(name,negation);
+			cnf.updateAppearance(name,negation);
+			cnf.updateIndexation(name, clause_id);
+			
 		}
 		
 		return clause;

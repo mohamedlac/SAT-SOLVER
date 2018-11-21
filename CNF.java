@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
+
 
 /***
  * 
@@ -10,118 +10,115 @@ import java.util.Map;
 public class CNF {
 	
 
-	/***
-	 * @note the Indexation Map is used to store each appearance of a literal in a clause
-	 * @example (X2 v X1) ^ (X3 v X1) ^ (X3 v -X2)
-	 * Indexation of X2 we'll be : {0,2}
-	 * Indexation of X3 we'll be : {1,2}
-	 * @important : KEY OF THE MAP IS THE NAME OF THE VARIABLE !!!!!   
-	 */
-
-	private Map<String,ArrayList<Integer>> indexation;
 	private ArrayList<Clause> clauses;
-	private int num_clauses;
-	private int num_literals;
-	private int last_clause = 0;
-	private boolean satisfiable;
+	private HashMap<String,Integer> pos_appearance;
+	private HashMap<String,Integer> neg_appearance;
+	private HashMap<String,Boolean> pure_literals;
+	private HashMap<String,Integer> solution;
+	private HashMap<String,ArrayList<Integer>> indexation;
+
 	
+	private int num_literals;
+	private int num_clauses;
 	
 	public CNF(int num_literals,int num_clauses)
 	{
-		this.num_clauses = num_clauses;
+		this.num_clauses=num_clauses;
 		this.num_literals = num_literals;
-		this.satisfiable = false;
 		this.clauses = new ArrayList<Clause>();
-		indexation = new HashMap<String, ArrayList<Integer>>(num_literals);
-		InitIndexation();
-		}
-	
-	public int getNum_clauses() {
-		return num_clauses;
-	}
-	public void setNum_clauses(int num_clauses) {
-		this.num_clauses = num_clauses;
-	}
-	public int getNum_literals() {
-		return num_literals;
-	}
-	public void setNum_literals(int num_literals) {
-		this.num_literals = num_literals;
+		this.pos_appearance = new HashMap<String,Integer>();
+		this.neg_appearance = new HashMap<String ,Integer>();
+		this.pure_literals = new HashMap<String,Boolean>();
+		this.indexation = new HashMap<String,ArrayList<Integer>>();
+		this.solution = new HashMap<String,Integer>();
+		init();
 	}
 	
-	public ArrayList<Clause> getClauses() {
-		return clauses;
-	}
-	public void setClauses(ArrayList<Clause> clauses) {
-		this.clauses = clauses;
-	}
-	public int getLast_clause() {
-		return last_clause;
-	}
-	
-	public boolean isSatisfiable() {
-		return satisfiable;
-	}
-
-	public void setSatisfiable(boolean satisfiable) {
-		this.satisfiable = satisfiable;
-	}
-	
-	public Map<String,ArrayList<Integer>> getIndexation()
+	public boolean isConsistent()
 	{
-		return indexation;
+	
+		return num_clauses ==0;
 	}
 	
-	public void addClause(Clause c)
-	{
-		if(!isFull()) 
-		{	
-			clauses.add(c);
-			last_clause++;
-		}
-	}
-	
-	/***
-	 * Search Clause by id 
-	 * @param id
-	 * @return
-	 */
 	public Clause getClauseById(int id)
 	{
 		for (int i = 0; i < clauses.size(); i++) {
-			if(clauses.get(i).getId() == id)
+			
+			if(clauses.get(i)!=null &&clauses.get(i).getId() == id)
 				return clauses.get(i);
 			}
 		return null;
 	}
 	
-	/***
-	 * Remove Clause by id
-	 * @param index
-	 */
+	//Actually i don't remove the clause , i just set it to null because
+	//if i remove it completely , the order of my clauses in the ArrayList
+	//will change and it would be chaos
+	//It's risky  but i've made sure to check every clause that points to null 
+	//before i use it
 	public void removeClause(int id)
 	{
-		if(!isEmpty()) {
 			for (int i = 0; i < clauses.size(); i++) {
-				if(clauses.get(i).getId() == id)
+				if(clauses.get(i)!= null && clauses.get(i).getId() == id)
 				{
-					clauses.remove(i);
+					clauses.set(i,null);
+					num_clauses--;
 					break;}
-					
-			}
-			
-			num_clauses--;
+				}
+	}
+	
+	public void DecrementPosAppearance(String key)
+	{
+		if(pos_appearance.containsKey(key))
+		{
+			int appearance =pos_appearance.get(key)-1;
+			if(appearance <0)
+				pos_appearance.remove(key);
+			else 
+				pos_appearance.put(key,appearance);
 		}
+		
 	}
 	
-	private boolean isFull()
+	public void DecrementNegAppearance(String key)
 	{
-		return last_clause== getNum_clauses();
+		if(neg_appearance.containsKey(key)) {
+			int appearance =neg_appearance.get(key)-1;
+			if(appearance <0)
+				neg_appearance.remove(key);
+			else
+				neg_appearance.put(key,appearance);
+		}
+		
 	}
 	
-	public boolean isEmpty()
+	public void findPureLiterals() {
+		
+		for (int i = 1; i <= num_literals; i++) {
+			String name = "X"+i;
+			
+			if(this.neg_appearance.get(name) == 0)
+				pure_literals.put(name,false);
+			else if(this.pos_appearance.get(name) ==0)
+				pure_literals.put(name,true);
+			else
+				continue;
+			}
+		}
+	
+	
+	
+	public void  IncrementNegAppearance(String key)
 	{
-		return clauses.isEmpty();
+		if(neg_appearance.get(key)== null)
+			System.out.println("key doesnt exist");
+		int value = neg_appearance.get(key)+1;
+		neg_appearance.put(key, value);
+	}
+	
+	public void  IncrementPosAppearance(String key)
+	{
+		int value = pos_appearance.get(key)+1;
+		pos_appearance.put(key, value);
 	}
 	
 	/***
@@ -130,6 +127,7 @@ public class CNF {
 	 * @note id_clause begin from index 0
 	 * @example : updateIndexation("X2",1) 
 	 */
+	 
 	public void updateIndexation(String key, int id_clause)
 	{
 		ArrayList<Integer>  i = indexation.get(key);
@@ -144,19 +142,113 @@ public class CNF {
 	 * @note: containing id's of clauses where the variable appears
 	 * @example: getIndexationOf("X3")
 	 */
+	 
 	public ArrayList<Integer> getIndexationOf(String key) {
 		return indexation.get(key);
 	}
 	
+	public void display()
+	{
+		for(Clause c : getClauses())
+		{
+			if(c!= null)
+				System.out.println("CLause #"+c.getId()+" : "+c.toString());
+		}
+	}
 	
-	private void InitIndexation()
+	private void init()
 	{
 		for (int i = 0; i < num_literals; i++) {
 			String key = "X"+(i+1);
 			indexation.put(key,new ArrayList<Integer>());
+			pos_appearance.put(key, 0);
+			neg_appearance.put(key, 0);
+			
+		
+			
 		}
 	}
-
 	
+	public void updateAppearance(String key, boolean negation)
+	{
+		if(negation)
+			IncrementNegAppearance(key);
+		else
+			IncrementPosAppearance(key);
+	}
+	
+	public boolean emptyClause()
+	{
+		for(Clause c : clauses)
+			if(c != null && c.isEmpty())
+				return true;
+		return false;
+	}
+	
+	public void addClause(Clause c)
+	{
+		clauses.add(c);
+					
+	}
+	
+	public void removeAppearance(String key)
+	{
+		if(pos_appearance.containsKey(key))
+			pos_appearance.remove(key);
+		if(neg_appearance.containsKey(key))
+			neg_appearance.remove(key);
+	}
+	
+	
+	public void addSolution(String key,boolean isnegation)
+	{
+		if(isnegation)
+			solution.put(key,0);
+		else
+			solution.put(key,1);
+	}
+	
+	public ArrayList<Clause> getClauses() {
+		return clauses;
+	}
+	public void setClauses(ArrayList<Clause> clauses) {
+		this.clauses = clauses;
+	}
+	public HashMap<String,Integer> getPos_appearance() {
+		return pos_appearance;
+	}
+	public void setPos_appearance(HashMap<String,Integer> pos_appearance) {
+		this.pos_appearance = pos_appearance;
+	}
+	public HashMap<String,Integer> getNeg_appearance() {
+		return neg_appearance;
+	}
+	public void setNeg_appearance(HashMap<String,Integer> neg_appearance) {
+		this.neg_appearance = neg_appearance;
+	}
+	public HashMap<String,Boolean> getPure_literals() {
+		return pure_literals;
+	}
+	public void setPure_literals(HashMap<String,Boolean> pure_literals) {
+		this.pure_literals = pure_literals;
+	}
+	public HashMap<String,Integer> getSolution() {
+		return solution;
+	}
+	public void setSolution(HashMap<String,Integer> solution) {
+		this.solution = solution;
+	}
+	public int getNum_literals() {
+		return num_literals;
+	}
+	public void setNum_literals(int num_literals) {
+		this.num_literals = num_literals;
+	}
+	public int getNum_clauses() {
+		return num_clauses;
+	}
+	public void setNum_clauses(int num_clauses) {
+		this.num_clauses = num_clauses;
+	}
 }
 
